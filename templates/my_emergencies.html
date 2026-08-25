@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Emergencies</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        🚨 Smart Emergency
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/">Home</a>
+
+        {% if session.get("user_id") %}
+
+            {% if session.get("role") == "admin" %}
+
+                <a href="/dashboard">Dashboard</a>
+                <a href="/resources">Manage Resources</a>
+
+            {% else %}
+
+                <a href="/report">Report Emergency</a>
+                <a href="/my_emergencies">My Emergencies</a>
+
+            {% endif %}
+
+            <a href="/logout">Logout</a>
+
+        {% else %}
+
+            <a href="/login">Login</a>
+
+        {% endif %}
+
+    </div>
+
+</nav>
+
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+
+        <span class="badge">
+            🚨 My Emergencies
+        </span>
+
+        <h1>My Reported Emergencies</h1>
+
+        <p>
+            View the emergencies you have reported.
+        </p>
+
+    </div>
+
+
+    <div class="emergency-table-container">
+
+        {% if emergencies %}
+
+        <div class="table-wrapper">
+
+            <table class="emergency-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Reported At</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for emergency in emergencies %}
+
+                    <tr>
+
+                        <td class="emergency-id">
+                            #{{ emergency[0] }}
+                        </td>
+
+                        <td>
+                            <span class="type-badge">
+                                {{ emergency[1] }}
+                            </span>
+                        </td>
+
+                        <td class="description-cell">
+                            {{ emergency[2] }}
+                        </td>
+
+                        <td>
+                            <span class="priority-badge">
+                                {{ emergency[3] }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="status-badge">
+                                {{ emergency[4] }}
+                            </span>
+                        </td>
+
+                        <td class="date-cell">
+                            {{ emergency[5] }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <h2>📭 No Emergencies Found</h2>
+
+            <p>
+                You have not reported any emergencies yet.
+            </p>
+
+            <a href="/report" class="primary-btn">
+                🚨 Report Emergency
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+</body>
+</html>

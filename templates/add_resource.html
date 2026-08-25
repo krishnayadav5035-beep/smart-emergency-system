@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Resource - Smart Emergency</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">🚨 Smart Emergency</div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/report">Report Emergency</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/resources">Resources</a>
+    </div>
+</nav>
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+        <span class="badge">➕ Resource Management</span>
+
+        <h1>Add Emergency Resource</h1>
+
+        <p>
+            Add equipment, medical resources and response teams
+            available across the campus.
+        </p>
+    </div>
+
+    <div class="emergency-table-card">
+
+        <form method="POST">
+
+            <div class="form-group">
+                <label>Resource Name</label>
+                <input type="text"
+                       name="name"
+                       placeholder="e.g. Campus Ambulance"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Resource Type</label>
+                <select name="resource_type" required>
+                    <option value="">Select Type</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Medical Equipment">Medical Equipment</option>
+                    <option value="Fire Safety">Fire Safety</option>
+                    <option value="Security">Security</option>
+                    <option value="Rescue">Rescue</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number"
+                       name="quantity"
+                       min="1"
+                       value="1"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text"
+                       name="location"
+                       placeholder="e.g. Main Gate"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="number"
+                       name="latitude"
+                       step="any"
+                       placeholder="19.20000000"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="number"
+                       name="longitude"
+                       step="any"
+                       placeholder="20.90000000"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" required>
+                    <option value="Available">Available</option>
+                    <option value="In Use">In Use</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 25px;">
+
+                <button type="submit" class="btn-primary">
+                    ➕ Add Resource
+                </button>
+
+                <a href="/resources"
+                   class="btn-secondary">
+                    ← Back to Resources
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+</body>
+</html>

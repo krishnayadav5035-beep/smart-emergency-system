@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Volunteer</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        🚨 Smart Emergency
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/resources">Manage Resources</a>
+        <a href="/volunteers">Volunteers</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+</nav>
+
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+
+        <span class="badge">
+            ✏️ Volunteer Management
+        </span>
+
+        <h1>Edit Volunteer</h1>
+
+        <p>
+            Update volunteer information and availability.
+        </p>
+
+    </div>
+
+
+    <div class="emergency-details-card">
+
+        <form method="POST">
+
+            <div class="details-grid">
+
+                <div class="detail-item">
+                    <strong>Name</strong>
+
+                    <input
+                        type="text"
+                        name="name"
+                        value="{{ volunteer.name }}"
+                        required
+                    >
+                </div>
+
+
+                <div class="detail-item">
+                    <strong>Email</strong>
+
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ volunteer.email }}"
+                        required
+                    >
+                </div>
+
+
+                <div class="detail-item">
+                    <strong>Phone</strong>
+
+                    <input
+                        type="text"
+                        name="phone"
+                        value="{{ volunteer.phone or '' }}"
+                    >
+                </div>
+
+
+                <div class="detail-item">
+                    <strong>Skills</strong>
+
+                    <input
+                        type="text"
+                        name="skills"
+                        value="{{ volunteer.skills or '' }}"
+                    >
+                </div>
+
+
+                <div class="detail-item">
+                    <strong>Availability</strong>
+
+                    <select name="availability">
+
+                        <option value="Available"
+                            {% if volunteer.availability == "Available" %}selected{% endif %}>
+                            Available
+                        </option>
+
+                        <option value="Busy"
+                            {% if volunteer.availability == "Busy" %}selected{% endif %}>
+                            Busy
+                        </option>
+
+                        <option value="Unavailable"
+                            {% if volunteer.availability == "Unavailable" %}selected{% endif %}>
+                            Unavailable
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+
+            <div class="detail-actions">
+
+                <a href="/volunteers" class="secondary-btn">
+                    ← Cancel
+                </a>
+
+                <button type="submit" class="primary-btn">
+                    💾 Update Volunteer
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+</body>
+</html>

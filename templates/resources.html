@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+    <title>Resource Management</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        🚨 Smart Emergency
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/report">Report Emergency</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/resources">Resources</a>
+    </div>
+
+</nav>
+
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+
+        <span class="badge">
+            🧰 Resource Management
+        </span>
+
+        <h1>Emergency Resources</h1>
+
+        <p>
+            Monitor emergency resources, equipment and response teams
+            available across the campus.
+        </p>
+
+    </div>
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span>🧰</span>
+            <h3>{{ resources|length }}</h3>
+            <p>Resource Types</p>
+        </div>
+
+        <div class="stat-card">
+            <span>✅</span>
+            <h3>
+                {{ resources|selectattr('7', 'equalto', 'Available')|list|length }}
+            </h3>
+            <p>Available</p>
+        </div>
+
+        <div class="stat-card">
+            <span>🚨</span>
+            <h3>
+                {{ resources|selectattr('7', 'equalto', 'In Use')|list|length }}
+            </h3>
+            <p>In Use</p>
+        </div>
+
+        <div class="stat-card">
+            <span>🔧</span>
+            <h3>
+                {{ resources|selectattr('7', 'equalto', 'Maintenance')|list|length }}
+            </h3>
+            <p>Maintenance</p>
+        </div>
+
+    </div>
+<div class="map-card">
+
+    <div class="map-header">
+
+        <div>
+            <h2>📍 Resource Location Map</h2>
+            <p>Live locations of campus emergency resources</p>
+        </div>
+
+        <span class="live-status">● LIVE</span>
+
+    </div>
+
+    <div id="resourceMap"></div>
+
+</div>
+    <div class="emergency-table-card">
+        
+
+<div class="table-header">
+
+    <div>
+        <h2>Available Resources</h2>
+        <p>Campus emergency resources and response teams</p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px;">
+
+        <a href="/resources/add"
+           class="primary-btn"
+           style="text-decoration: none;">
+            ➕ Add Resource
+        </a>
+
+        <span class="live-status">
+            ● LIVE
+        </span>
+
+    </div>
+
+</div>
+
+
+        {% if resources %}
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Resource</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for resource in resources %}
+
+                    <tr>
+
+                        <td>
+                            #{{ resource[0] }}
+                        </td>
+
+                        <td>
+                            {% if resource[1] == "Campus Ambulance" %}
+                                🚑
+                            {% elif resource[1] == "First Aid Kit" %}
+                                🧰
+                            {% elif resource[1] == "Fire Extinguisher" %}
+                                🧯
+                            {% elif resource[1] == "Security Team" %}
+                                🛡️
+                            {% elif resource[1] == "Rescue Team" %}
+                                🛟
+                            {% else %}
+                                🧰
+                            {% endif %}
+
+                            <strong>
+                                {{ resource[1] }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ resource[2] }}
+                        </td>
+
+                        <td>
+                            {{ resource[3] }}
+                        </td>
+
+                        <td>
+                            📍 {{ resource[4] }}
+                        </td>
+
+<td>
+
+    {% if resource[7] == "Available" %}
+
+        <span class="resource-status available">
+            ● Available
+        </span>
+
+        <div class="resource-actions">
+
+            <a href="/resource_status/{{ resource[0] }}/In%20Use"
+               class="status-btn progress-btn">
+                🚨 Use
+            </a>
+
+            <a href="/resource_status/{{ resource[0] }}/Maintenance"
+               class="status-btn maintenance-btn">
+                🔧 Maintenance
+            </a>
+
+        </div>
+
+    {% elif resource[7] == "In Use" %}
+
+        <span class="resource-status in-use">
+            ● In Use
+        </span>
+
+        <div class="resource-actions">
+
+            <a href="/resource_status/{{ resource[0] }}/Available"
+               class="status-btn resolve-btn">
+                ✅ Available
+            </a>
+
+        </div>
+
+    {% else %}
+
+        <span class="resource-status maintenance">
+            ● Maintenance
+        </span>
+
+        <div class="resource-actions">
+
+            <a href="/resource_status/{{ resource[0] }}/Available"
+               class="status-btn resolve-btn">
+                ✅ Available
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</td>
+
+                        <td>
+                            {{ resource[8] }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <div>🧰</div>
+
+            <h3>No Resources Available</h3>
+
+            <p>
+                There are currently no emergency resources
+                registered in the system.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+<script id="resource-data" type="application/json">
+    {{ resources | tojson }}
+</script>
+<script>
+    const resources = JSON.parse(
+        document.getElementById("resource-data").textContent
+    );
+
+    const resourceMap = L.map("resourceMap").setView(
+        [19.202, 20.902],
+        15
+    );
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(resourceMap);
+
+    resources.forEach(function(resource) {
+
+        const marker = L.marker([
+            resource[5],
+            resource[6]
+        ]).addTo(resourceMap);
+
+        marker.bindPopup(
+            "<strong>🚨 " + resource[1] + "</strong><br>" +
+            "<b>Type:</b> " + resource[2] + "<br>" +
+            "<b>Quantity:</b> " + resource[3] + "<br>" +
+            "<b>Location:</b> " + resource[4] + "<br>" +
+            "<b>Status:</b> " + resource[7]
+        );
+
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Emergency Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        🚨 Smart Emergency
+    </div>
+
+    <div class="nav-links">
+
+    <a href="/">Home</a>
+
+    {% if session.get("user_id") %}
+
+    {% if session.get("role") == "admin" %}
+        <a href="/dashboard">Dashboard</a>
+        <a href="/resources">Manage Resources</a>
+        <a href="/volunteers">Volunteers</a>
+    {% else %}
+        <a href="/report">Report Emergency</a>
+        <a href="/my_emergencies">My Emergencies</a>
+    {% endif %}
+
+    <a href="/logout">Logout</a>
+
+{% else %}
+
+    <a href="/login">Login</a>
+
+{% endif %}
+
+</div>
+
+</nav>
+
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+
+        <span class="badge">
+            🛡️ Admin Monitoring
+        </span>
+
+        <h1>
+            Emergency Dashboard
+        </h1>
+
+        <p>
+            Monitor and manage reported emergencies
+            across the campus.
+        </p>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span>🚨</span>
+            <h3>{{ emergencies|length }}</h3>
+            <p>Total Emergencies</p>
+        </div>
+
+
+        <div class="stat-card">
+            <span>🔴</span>
+            <h3>
+                {{ emergencies|selectattr('6', 'equalto', 'Critical')|list|length }}
+            </h3>
+            <p>Critical</p>
+        </div>
+
+
+        <div class="stat-card">
+            <span>🟠</span>
+            <h3>
+                {{ emergencies|selectattr('6', 'equalto', 'High')|list|length }}
+            </h3>
+            <p>High Priority</p>
+        </div>
+
+
+        <div class="stat-card">
+            <span>🟢</span>
+            <h3>
+                {{ emergencies|selectattr('7', 'equalto', 'Resolved')|list|length }}
+            </h3>
+            <p>Resolved</p>
+        </div>
+
+    </div>
+
+
+    <!-- MAP -->
+
+    <div class="map-card">
+
+        <div class="map-header">
+
+            <div>
+                <h2>📍 Emergency Location Map</h2>
+
+                <p>
+                    Live locations of reported campus emergencies
+                </p>
+            </div>
+
+            <span class="live-status">
+                ● LIVE
+            </span>
+
+        </div>
+
+        <div id="emergencyMap"></div>
+
+        <!-- Emergency data from Flask -->
+        <script id="emergency-data" type="application/json">
+            {{ emergencies | tojson }}
+        </script>
+
+        <script>
+            const emergencyData = JSON.parse(
+                document.getElementById("emergency-data").textContent
+            );
+
+            const emergencyMap = L.map("emergencyMap");
+
+            L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap contributors"
+                }
+            ).addTo(emergencyMap);
+
+            function getPriorityColor(priority) {
+                switch (priority) {
+                    case "Critical":
+                        return "#dc2626";
+                    case "High":
+                        return "#f97316";
+                    case "Medium":
+                        return "#eab308";
+                    case "Low":
+                        return "#22c55e";
+                    default:
+                        return "#2563eb";
+                }
+            }
+
+            const markerBounds = [];
+
+            emergencyData.forEach(function (emergency) {
+                const id = emergency[0];
+                const type = emergency[2];
+                const description = emergency[3];
+                const lat = parseFloat(emergency[4]);
+                const lng = parseFloat(emergency[5]);
+                const priority = emergency[6];
+                const status = emergency[7];
+
+                if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                    return;
+                }
+
+                const color = getPriorityColor(priority);
+
+                const marker = L.circleMarker(
+                    [lat, lng],
+                    {
+                        radius: 10,
+                        fillColor: color,
+                        color: "#ffffff",
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }
+                ).addTo(emergencyMap);
+
+                const popupContent = `
+                    <div style="min-width: 220px;">
+                        <h3 style="margin: 0 0 8px 0;">
+                            🚨 Emergency #${id}
+                        </h3>
+
+                        <p><strong>Type:</strong> ${type}</p>
+                        <p><strong>Priority:</strong> ${priority}</p>
+                        <p><strong>Status:</strong> ${status}</p>
+
+                        <p>
+                            <strong>Location:</strong><br>
+                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                        </p>
+
+                        <p>
+                            <strong>Description:</strong><br>
+                            ${description}
+                        </p>
+
+                        <a
+                            href="/emergency/${id}"
+                            style="
+                                display: inline-block;
+                                padding: 7px 12px;
+                                background: #2563eb;
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 6px;
+                            "
+                        >
+                            🔎 View Details
+                        </a>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markerBounds.push([lat, lng]);
+            });
+
+            if (markerBounds.length > 0) {
+                emergencyMap.fitBounds(markerBounds, {
+                    padding: [40, 40]
+                });
+            } else {
+                emergencyMap.setView([19.2, 20.9], 6);
+            }
+        </script>
+
+        </div>
+
+        <!-- EMERGENCY TABLE -->
+
+    <div class="emergency-table-card">
+
+        <div class="table-header">
+
+            <h2>
+                Reported Emergencies
+            </h2>
+
+            <span class="live-status">
+                ● LIVE
+            </span>
+
+        </div>
+
+
+        {% if emergencies %}
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Location</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Reported At</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for emergency in emergencies %}
+
+                    <tr>
+
+                        <td>
+                            #{{ emergency[0] }}
+                        </td>
+
+
+                        <td>
+
+                            {% if emergency[2] == "Fire" %}
+
+                                🔥 Fire
+
+                            {% elif emergency[2] == "Medical" %}
+
+                                🚑 Medical
+
+                            {% elif emergency[2] == "Accident" %}
+
+                                🚗 Accident
+
+                            {% elif emergency[2] == "Security" %}
+
+                                🛡️ Security
+
+                            {% else %}
+
+                                ⚠️ Other
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ emergency[3] }}
+                        </td>
+
+
+                        <td>
+                            {{ emergency[4] }},
+                            {{ emergency[5] }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="priority {{ emergency[6]|lower }}">
+                                {{ emergency[6] }}
+                            </span>
+
+                        </td>
+
+
+<td>
+    <span class="status-badge">
+        {{ emergency[7] }}
+    </span>
+
+    <div class="status-actions">
+
+        {% if emergency[7] == "Reported" %}
+            <a href="/update_status/{{ emergency[0] }}/In%20Progress"
+               class="status-btn progress-btn">
+                🟡 In Progress
+            </a>
+
+            <a href="/update_status/{{ emergency[0] }}/Resolved"
+               class="status-btn resolve-btn">
+                🟢 Resolve
+            </a>
+
+        {% elif emergency[7] == "In Progress" %}
+            <a href="/update_status/{{ emergency[0] }}/Resolved"
+               class="status-btn resolve-btn">
+                🟢 Resolve
+            </a>
+
+        {% endif %}
+
+    </div>
+</td>
+
+
+                        <td>
+                            {{ emergency[8] }}
+                        </td>
+                        <td>
+    <a href="/emergency/{{ emergency[0] }}"
+       class="status-btn progress-btn">
+        🔎 View Details
+    </a>
+</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <div>📭</div>
+
+            <h3>
+                No Emergencies Reported
+            </h3>
+
+            <p>
+                There are currently no emergency reports.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+</body>
+
+</html>

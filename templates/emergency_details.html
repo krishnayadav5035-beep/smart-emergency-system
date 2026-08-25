@@ -1,0 +1,1036 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Emergency Details</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            🚨 Smart Emergency
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/">Home</a>
+
+            <a href="/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/resources">
+                Manage Resources
+            </a>
+
+            <a href="/volunteers">
+                Volunteers
+            </a>
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- ================= MAIN ================= -->
+
+    <section class="dashboard-section">
+
+
+        <!-- PAGE HEADER -->
+
+        <div class="dashboard-header">
+
+            <span class="badge">
+                🛡️ Emergency Details
+            </span>
+
+            <h1>
+                Emergency #{{ emergency[0] }}
+            </h1>
+
+            <p>
+                Complete information about this emergency.
+            </p>
+
+        </div>
+
+
+
+        <!-- ================= EMERGENCY INFORMATION ================= -->
+
+        <div class="emergency-details-card">
+
+            <h2>
+                🚨 Emergency Information
+            </h2>
+
+
+            <div class="details-grid">
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Emergency ID
+                    </strong>
+
+                    <span>
+                        #{{ emergency[0] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Emergency Type
+                    </strong>
+
+                    <span>
+                        {{ emergency[2] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Priority
+                    </strong>
+
+                    <span>
+                        {{ emergency[6] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Status
+                    </strong>
+
+                    <span>
+                        {{ emergency[7] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Latitude
+                    </strong>
+
+                    <span>
+                        {{ emergency[4] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Longitude
+                    </strong>
+
+                    <span>
+                        {{ emergency[5] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Reported At
+                    </strong>
+
+                    <span>
+                        {{ emergency[8] }}
+                    </span>
+
+                </div>
+
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        User ID
+                    </strong>
+
+                    <span>
+                        {{ emergency[1] }}
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- DESCRIPTION -->
+
+            <div class="description-box">
+
+                <h3>
+                    📝 Description
+                </h3>
+
+                <p>
+                    {{ emergency[3] or "No description provided." }}
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ================= ASSIGNED VOLUNTEER ================= -->
+
+        <div class="emergency-details-card">
+
+            <h2>
+                👤 Assigned Volunteer
+            </h2>
+
+
+            {% if assigned_volunteer %}
+
+
+                <div class="details-grid">
+
+
+                    <div class="detail-item">
+
+                        <strong>
+                            Name
+                        </strong>
+
+                        <span>
+                            {{ assigned_volunteer[1] }}
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <strong>
+                            Email
+                        </strong>
+
+                        <span>
+                            {{ assigned_volunteer[2] }}
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <strong>
+                            Phone
+                        </strong>
+
+                        <span>
+                            {{ assigned_volunteer[3] or "N/A" }}
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <strong>
+                            Skills
+                        </strong>
+
+                        <span>
+                            {{ assigned_volunteer[4] or "N/A" }}
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <strong>
+                            Availability
+                        </strong>
+
+
+                        {% if assigned_volunteer[5] == "Available" %}
+
+                            <span class="status-badge">
+                                🟢 Available
+                            </span>
+
+                        {% elif assigned_volunteer[5] == "Busy" %}
+
+                            <span class="priority-badge">
+                                🟡 Busy
+                            </span>
+
+                        {% else %}
+
+                            <span class="type-badge">
+                                🔴 Unavailable
+                            </span>
+
+                        {% endif %}
+
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <strong>
+                            Assigned At
+                        </strong>
+
+                        <span>
+                            {{ assigned_volunteer[6] }}
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <p>
+                    No volunteer assigned yet.
+                </p>
+
+
+            {% endif %}
+
+        </div>
+
+
+
+        <!-- ================= ASSIGN VOLUNTEER ================= -->
+
+        {% if not assigned_volunteer %}
+
+
+            <div class="emergency-table-card">
+
+
+                <div class="table-header">
+
+                    <div>
+
+                        <h2>
+                            👥 Assign Volunteer
+                        </h2>
+
+                        <p>
+                            Select an available volunteer.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                {% if available_volunteers %}
+
+
+                    <form
+                        method="POST"
+                        action="/emergency/{{ emergency[0] }}/assign-volunteer"
+                    >
+
+
+                        <div class="form-group">
+
+                            <label for="volunteer_id">
+                                Select Volunteer
+                            </label>
+
+
+                            <select
+                                name="volunteer_id"
+                                id="volunteer_id"
+                                required
+                            >
+
+
+                                <option value="">
+                                    Select an available volunteer
+                                </option>
+
+
+                                {% for volunteer in available_volunteers %}
+
+
+                                    <option
+                                        value="{{ volunteer[0] }}"
+                                    >
+
+                                        {{ volunteer[1] }}
+
+                                        {% if volunteer[4] %}
+
+                                            -
+                                            {{ volunteer[4] }}
+
+                                        {% endif %}
+
+                                    </option>
+
+
+                                {% endfor %}
+
+
+                            </select>
+
+
+                        </div>
+
+
+
+                        <button
+                            type="submit"
+                            class="primary-btn"
+                        >
+
+                            👥 Assign Volunteer
+
+                        </button>
+
+
+                    </form>
+
+
+                {% else %}
+
+
+                    <p>
+                        ⚠️ No available volunteers right now.
+                    </p>
+
+
+                    <a
+                        href="/volunteers"
+                        class="secondary-btn"
+                    >
+
+                        Manage Volunteers
+
+                    </a>
+
+
+                {% endif %}
+
+
+            </div>
+
+
+        {% endif %}
+
+
+
+        <!-- ================= ASSIGNED RESOURCES ================= -->
+
+        <div class="emergency-table-card">
+
+
+            <div class="table-header">
+
+                <div>
+
+                    <h2>
+                        📦 Assigned Resources
+                    </h2>
+
+                    <p>
+                        Resources currently assigned to this emergency.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            {% if assigned_resources %}
+
+
+                <div class="table-wrapper">
+
+
+                    <table class="emergency-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Resource
+                                </th>
+
+                                <th>
+                                    Type
+                                </th>
+
+                                <th>
+                                    Quantity
+                                </th>
+
+                                <th>
+                                    Assigned At
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            {% for resource in assigned_resources %}
+
+<tr>
+
+    <td>
+        {{ resource[1] }}
+    </td>
+
+    <td>
+        {{ resource[2] }}
+    </td>
+
+    <td>
+        {{ resource[3] }}
+    </td>
+
+    <td>
+        {{ resource[4] }}
+    </td>
+
+    <td>
+
+        {% if resource[5] %}
+
+            🟢 Released
+
+        {% else %}
+
+            🔴 In Use
+
+            <form
+                method="POST"
+                action="{{ url_for('release_resource', assignment_id=resource[0]) }}"
+            >
+
+                <button
+                    type="submit"
+                    class="secondary-btn"
+                >
+                    ↩️ Release
+                </button>
+
+            </form>
+
+        {% endif %}
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <p>
+                    No resources assigned yet.
+                </p>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+
+        <!-- ================= AVAILABLE RESOURCES ================= -->
+
+        <div class="emergency-table-card">
+
+
+            <div class="table-header">
+
+                <div>
+
+                    <h2>
+                        🧰 Assign Resource
+                    </h2>
+
+                    <p>
+                        Select an available resource.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            {% if resources %}
+
+
+                <form
+                    method="POST"
+                    action="/emergency/{{ emergency[0] }}/assign-resource"
+                >
+
+
+                    <div class="form-group">
+
+
+                        <label for="resource_id">
+                            Resource
+                        </label>
+
+
+                        <select
+                            name="resource_id"
+                            id="resource_id"
+                            required
+                        >
+
+
+                            <option value="">
+                                Select Resource
+                            </option>
+
+
+                            {% for resource in resources %}
+
+
+                                <option
+                                    value="{{ resource[0] }}"
+                                    data-quantity="{{ resource[3] }}"
+                                >
+
+                                    {{ resource[1] }}
+
+                                    -
+
+                                    {{ resource[2] }}
+
+                                    -
+
+                                    Available:
+                                    {{ resource[3] }}
+
+                                </option>
+
+
+                            {% endfor %}
+
+
+                        </select>
+
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+
+                        <label for="quantity">
+                            Quantity
+                        </label>
+
+
+                        <input
+                            type="number"
+                            name="quantity"
+                            id="quantity"
+                            min="1"
+                            value="1"
+                            required
+                        >
+
+
+                        <small id="quantityHelp">
+                            Select a resource first.
+                        </small>
+
+
+                    </div>
+
+
+
+                    <button
+                        type="submit"
+                        class="primary-btn"
+                    >
+
+                        🧰 Assign Resource
+
+                    </button>
+
+
+                </form>
+
+
+            {% else %}
+
+
+                <p>
+                    ⚠️ No available resources.
+                </p>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+
+        <!-- ================= LOCATION ================= -->
+
+        <div class="emergency-details-card">
+
+
+            <h2>
+                📍 Emergency Location
+            </h2>
+
+
+            <div class="details-grid">
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Latitude
+                    </strong>
+
+                    <span>
+                        {{ emergency[4] }}
+                    </span>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <strong>
+                        Longitude
+                    </strong>
+
+                    <span>
+                        {{ emergency[5] }}
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+
+            {% if emergency[4] and emergency[5] %}
+
+
+                <div class="detail-actions">
+
+                    <a
+                        href="https://www.google.com/maps?q={{ emergency[4] }},{{ emergency[5] }}"
+                        target="_blank"
+                        class="primary-btn"
+                    >
+
+                        🗺️ Open in Google Maps
+
+                    </a>
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+
+        <!-- ================= ACTIONS ================= -->
+
+        <div class="detail-actions">
+
+
+            <a
+                href="/dashboard"
+                class="secondary-btn"
+            >
+
+                ← Back to Dashboard
+
+            </a>
+
+
+            {% if emergency[7] == "Reported" %}
+
+
+                <a
+                    href="/update_status/{{ emergency[0] }}/In%20Progress"
+                    class="status-btn progress-btn"
+                >
+
+                    🟡 Mark In Progress
+
+                </a>
+
+
+                <a
+                    href="/update_status/{{ emergency[0] }}/Resolved"
+                    class="status-btn resolve-btn"
+                >
+
+                    🟢 Resolve Emergency
+
+                </a>
+
+
+            {% elif emergency[7] == "In Progress" %}
+
+
+                <a
+                    href="/update_status/{{ emergency[0] }}/Resolved"
+                    class="status-btn resolve-btn"
+                >
+
+                    🟢 Resolve Emergency
+
+                </a>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+
+
+        const resourceSelect =
+            document.getElementById("resource_id");
+
+
+        const quantityInput =
+            document.getElementById("quantity");
+
+
+        const quantityHelp =
+            document.getElementById("quantityHelp");
+
+
+
+        if (
+            resourceSelect &&
+            quantityInput &&
+            quantityHelp
+        ) {
+
+
+            let availableQuantity = 1;
+
+
+
+            resourceSelect.addEventListener(
+                "change",
+                function ()
+                {
+
+
+                    const selectedOption =
+                        resourceSelect.options[
+                            resourceSelect.selectedIndex
+                        ];
+
+
+
+                    if (!selectedOption.value)
+                    {
+
+                        quantityInput.value = 1;
+
+                        quantityInput.max = 1;
+
+                        quantityHelp.textContent =
+                            "Select a resource first.";
+
+                        return;
+
+                    }
+
+
+
+                    availableQuantity =
+                        parseInt(
+                            selectedOption.dataset.quantity
+                        );
+
+
+
+                    quantityInput.max =
+                        availableQuantity;
+
+
+
+                    quantityHelp.textContent =
+                        "Available quantity: "
+                        + availableQuantity;
+
+
+
+                    if (
+                        parseInt(quantityInput.value)
+                        > availableQuantity
+                    )
+                    {
+
+                        quantityInput.value =
+                            availableQuantity;
+
+                    }
+
+
+                }
+            );
+
+
+
+            quantityInput.addEventListener(
+                "input",
+                function ()
+                {
+
+
+                    let value =
+                        parseInt(
+                            quantityInput.value
+                        );
+
+
+
+                    if (isNaN(value) || value < 1)
+                    {
+
+                        quantityInput.value = 1;
+
+                        return;
+
+                    }
+
+
+
+                    if (
+                        value > availableQuantity
+                    )
+                    {
+
+                        quantityInput.value =
+                            availableQuantity;
+
+                    }
+
+
+                }
+            );
+
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
+```

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Emergency Response System</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            🚨 Smart Emergency
+        </div>
+
+        <div class="nav-links">
+
+    <a href="/">Home</a>
+
+    {% if session.get("user_id") %}
+
+    {% if session.get("role") == "admin" %}
+        <a href="/dashboard">Dashboard</a>
+        <a href="/resources">Manage Resources</a>
+        <a href="/volunteers">Volunteers</a>
+    {% else %}
+        <a href="/report">Report Emergency</a>
+        <a href="/my_emergencies">My Emergencies</a>
+    {% endif %}
+
+    <a href="/logout">Logout</a>
+
+{% else %}
+
+    <a href="/login">Login</a>
+
+{% endif %}
+
+</div>
+    </nav>
+
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <span class="badge">
+                🛡️ College Campus Safety
+            </span>
+
+            <h1>
+                Smart Emergency<br>
+                Response System
+            </h1>
+
+            <p>
+                A centralized platform to report emergencies,
+                monitor locations, manage resources and coordinate
+                emergency response within the campus.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="{{ url_for('report_emergency') }}" class="primary-btn">
+    🚨 Report Emergency
+</a>
+
+                <button class="secondary-btn">
+                    <a href="/dashboard#emergencyMap" class="secondary-btn">
+    View Emergency Map
+</a>
+                </button>
+            </div>
+
+        </div>
+
+        <div class="hero-card">
+
+            <div class="card-header">
+                <span>Emergency Status</span>
+                <span class="status">● LIVE</span>
+            </div>
+
+            <div class="emergency-item">
+                <span class="icon">🚑</span>
+                <div>
+                    <strong>Medical Emergency</strong>
+                    <small>Main Building</small>
+                </div>
+                <span class="high">HIGH</span>
+            </div>
+
+            <div class="emergency-item">
+                <span class="icon">🔥</span>
+                <div>
+                    <strong>Fire Alert</strong>
+                    <small>Computer Lab</small>
+                </div>
+                <span class="critical">CRITICAL</span>
+            </div>
+
+            <div class="emergency-item">
+                <span class="icon">🛡️</span>
+                <div>
+                    <strong>Security Issue</strong>
+                    <small>Campus Gate</small>
+                </div>
+                <span class="medium">MEDIUM</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="features">
+
+        <h2>How Our System Helps</h2>
+
+        <div class="feature-grid">
+
+            <div class="feature-card">
+                <div>🚨</div>
+                <h3>Emergency Reporting</h3>
+                <p>
+                    Quickly report medical, fire, accident
+                    and security emergencies.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div>🗺️</div>
+                <h3>Location Monitoring</h3>
+                <p>
+                    View emergency locations using an
+                    interactive campus map.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div>🧰</div>
+                <h3>Resource Management</h3>
+                <p>
+                    Track emergency equipment and
+                    available resources.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div>👥</div>
+                <h3>Volunteer Coordination</h3>
+                <p>
+                    Manage volunteers and assign them
+                    to emergency situations.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+</body>
+</html>

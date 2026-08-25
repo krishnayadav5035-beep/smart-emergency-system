@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Report Emergency</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<script>
+
+function getLocation() {
+
+    const status = document.getElementById("locationStatus");
+    const button = document.getElementById("locationBtn");
+
+    if (!navigator.geolocation) {
+
+        status.innerText =
+            "❌ Your browser does not support location detection.";
+
+        return;
+    }
+
+
+    status.innerText =
+        "📍 Detecting your location...";
+
+    button.disabled = true;
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            const latitude =
+                position.coords.latitude;
+
+            const longitude =
+                position.coords.longitude;
+
+
+            document.getElementById("latitude").value =
+                latitude.toFixed(6);
+
+            document.getElementById("longitude").value =
+                longitude.toFixed(6);
+
+
+            status.innerText =
+                "✅ Location detected successfully!";
+
+
+            button.innerText =
+                "📍 Location Detected";
+
+
+            button.disabled = false;
+
+        },
+
+
+        function(error) {
+
+            button.disabled = false;
+
+            button.innerText =
+                "📍 Try Again";
+
+
+            if (error.code === 1) {
+
+                status.innerText =
+                    "❌ Location permission denied. Please allow location access.";
+
+            }
+            else if (error.code === 2) {
+
+                status.innerText =
+                    "❌ Unable to detect your location.";
+
+            }
+            else if (error.code === 3) {
+
+                status.innerText =
+                    "❌ Location request timed out. Please try again.";
+
+            }
+            else {
+
+                status.innerText =
+                    "❌ Could not detect your location.";
+
+            }
+
+        },
+
+
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+
+    );
+
+}
+
+</script>
+
+
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">🚨 Smart Emergency</div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/report">Report Emergency</a>
+    </div>
+</nav>
+
+<section class="report-section">
+
+    <div class="report-container">
+
+        <div class="report-heading">
+            <span class="badge">🚨 Emergency Reporting</span>
+
+            <h1>Report an Emergency</h1>
+
+            <p>
+                Provide the emergency details below.
+                The response team can use this information
+                to coordinate assistance.
+            </p>
+        </div>
+
+        <form method="POST" action="/report">
+
+            <label for="emergency_type">Emergency Type</label>
+
+            <select id="emergency_type" name="emergency_type" required>
+                <option value="">Select emergency type</option>
+                <option value="Medical">🚑 Medical</option>
+                <option value="Fire">🔥 Fire</option>
+                <option value="Accident">🚗 Accident</option>
+                <option value="Security">🛡️ Security</option>
+                <option value="Other">⚠️ Other</option>
+            </select>
+
+
+            <label for="description">Description</label>
+
+            <textarea
+                id="description"
+                name="description"
+                rows="5"
+                placeholder="Describe what happened..."
+                required></textarea>
+
+
+            <div class="location-section">
+                <label>Emergency Location</label>
+                 <button type="button"
+                  id="locationBtn" 
+                  class="secondary-btn" 
+                  onclick="getLocation()"> 📍 Use My Current Location </button> 
+                  <p id="locationStatus" style="margin-top: 10px;">
+                     Click the button to automatically detect your location. </p>
+                      <div class="location-grid">
+                         <div>
+                             <label for="latitude">Latitude</label>
+                              <input type="number"
+                               step="any" 
+                               id="latitude" 
+                               name="latitude" 
+                               placeholder="Automatically detected" 
+                               readonly required> 
+                            </div>
+                             <div>
+                                 <label for="longitude">Longitude</label> 
+                                 <input type="number"
+                                  step="any" 
+                                  id="longitude"
+                                   name="longitude"
+                                    placeholder="Automatically detected" 
+                                    readonly required>
+                                 </div> 
+                                </div> 
+                            </div>
+
+
+
+            <label for="priority">Priority</label>
+
+            <select id="priority" name="priority" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+            </select>
+
+
+            <button type="submit" class="primary-btn report-submit">
+                🚨 Submit Emergency Report
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Smart Emergency</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        🚨 Smart Emergency
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/report">Report Emergency</a>
+        <a href="/dashboard">Dashboard</a>
+    </div>
+
+</nav>
+
+
+<section class="login-section">
+
+    <div class="login-card">
+
+        <div class="login-header">
+
+            <span class="badge">
+                🔐 Secure Login
+            </span>
+
+            <h1>Welcome Back</h1>
+
+            <p>
+                Login to access the Smart Emergency System.
+            </p>
+
+        </div>
+
+
+        {% if error %}
+
+        <div class="login-error">
+            ⚠️ {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        <form method="POST" action="/login">
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+            </div>
+
+
+            <button type="submit" class="primary-btn">
+                🔐 Login
+            </button>
+
+        </form>
+
+
+        <div class="login-footer">
+
+            <p>
+                Don't have an account?
+                <a href="/report">Report an Emergency</a>
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+</body>
+
+</html>

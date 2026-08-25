@@ -1,0 +1,21 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+.venv-1/
+project_env/
+
+# MySQL database backup
+smart_emergency_db.sql
+
+# VS Code
+.vscode/
+
+# Debug / local files
+*.log
