@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session
 import mysql.connector
 from functools import wraps
-
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import DB_CONFIG
 
 app = Flask(__name__)
@@ -46,24 +46,24 @@ def login():
             cursor = db.cursor()
 
             cursor.execute("""
-                SELECT id, name, email, role
+                SELECT id, name, email, password, role
                 FROM users
-                WHERE email = %s AND password = %s
-            """, (email, password))
+                WHERE email = %s
+            """, (email,))
 
             user = cursor.fetchone()
 
             cursor.close()
             db.close()
 
-            if user:
+            if user and check_password_hash(user[3], password):
 
                 session["user_id"] = user[0]
                 session["user_name"] = user[1]
                 session["user_email"] = user[2]
-                session["role"] = user[3]
+                session["role"] = user[4]
 
-                if user[3] == "admin":
+                if user[4] == "admin":
                     return redirect("/dashboard")
                 else:
                     return redirect("/")
@@ -846,6 +846,61 @@ def assign_volunteer(emergency_id):
 
     except mysql.connector.Error as error:
         return f"Database error: {error}"
+@app.route("/register", methods=["GET", "POST"])
+def register():
+
+    if request.method == "POST":
+
+        name = request.form["name"]
+        email = request.form["email"]
+        password = request.form["password"]
+
+        try:
+            db = get_db_connection()
+            cursor = db.cursor()
+
+            # Check whether email already exists
+            cursor.execute(
+                "SELECT id FROM users WHERE email = %s",
+                (email,)
+            )
+
+            if cursor.fetchone():
+                cursor.close()
+                db.close()
+
+                return render_template(
+                    "register.html",
+                    error="Email already registered"
+                )
+
+            # Hash password
+            hashed_password = generate_password_hash(password)
+
+            # Save user
+            cursor.execute(
+                """
+                INSERT INTO users (name, email, password, role)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (name, email, hashed_password, "student")
+            )
+
+            db.commit()
+
+            cursor.close()
+            db.close()
+
+            return redirect("/login")
+
+        except mysql.connector.Error as error:
+
+            return render_template(
+                "register.html",
+                error=f"Database error: {error}"
+            )
+
+    return render_template("register.html")
 if __name__ == "__main__":
     import os
     app.run(
