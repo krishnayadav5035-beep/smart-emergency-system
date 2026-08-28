@@ -83,6 +83,7 @@
                         <th>Priority</th>
                         <th>Status</th>
                         <th>Reported At</th>
+                        <th>Assigned Responder</th>
                     </tr>
                 </thead>
 
@@ -121,6 +122,31 @@
                         <td class="date-cell">
                             {{ emergency[5] }}
                         </td>
+                        <td class="responder-cell">
+
+    {% if emergency[6] %}
+
+        <strong>👨‍🚒 {{ emergency[6] }}</strong>
+
+        {% if emergency[8] %}
+            <br>
+            📞 {{ emergency[8] }}
+        {% endif %}
+
+        {% if emergency[7] %}
+            <br>
+            ✉️ {{ emergency[7] }}
+        {% endif %}
+
+    {% else %}
+
+        <span class="not-assigned">
+            ⏳ Not Assigned
+        </span>
+
+    {% endif %}
+
+</td>
 
                     </tr>
 

@@ -607,31 +607,52 @@ def release_resource(assignment_id):
 @login_required
 def my_emergencies():
 
-    db = get_db_connection()
-    cursor = db.cursor()
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
 
-    cursor.execute("""
-        SELECT
-            id,
-            emergency_type,
-            description,
-            priority,
-            status,
-            reported_at
-        FROM emergencies
-        WHERE user_id = %s
-        ORDER BY reported_at DESC
-    """, (session["user_id"],))
+        cursor.execute("""
+            SELECT
+                e.id,
+                e.emergency_type,
+                e.description,
+                e.priority,
+                e.status,
+                e.reported_at,
+                v.name,
+                v.email,
+                v.phone,
+                ea.assigned_at
+            FROM emergencies e
 
-    emergencies = cursor.fetchall()
+            LEFT JOIN emergency_assignments ea
+                ON ea.id = (
+                    SELECT MAX(ea2.id)
+                    FROM emergency_assignments ea2
+                    WHERE ea2.emergency_id = e.id
+                )
 
-    cursor.close()
-    db.close()
+            LEFT JOIN volunteers v
+                ON ea.volunteer_id = v.id
 
-    return render_template(
-        "my_emergencies.html",
-        emergencies=emergencies
-    )
+            WHERE e.user_id = %s
+
+            ORDER BY e.reported_at DESC
+        """, (session["user_id"],))
+
+        emergencies = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+        return render_template(
+            "my_emergencies.html",
+            emergencies=emergencies
+        )
+
+    except mysql.connector.Error as error:
+
+        return f"Database error: {error}"
 @app.route("/volunteers")
 @admin_required
 def volunteers():
