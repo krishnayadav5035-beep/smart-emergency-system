@@ -91,6 +91,7 @@ h1, h2, h3, .logo {
     background: linear-gradient(90deg, #ffffff 0%, #fca5a5 50%, #ffffff 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: shimmerText 6s linear infinite;
 }
