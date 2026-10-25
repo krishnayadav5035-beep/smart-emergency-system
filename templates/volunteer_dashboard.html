@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="15">
+    <title>Volunteer Dashboard</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">🚨 Smart Emergency</div>
+    <div class="nav-links">
+        <a href="/volunteer-dashboard">My Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
+
+<section class="dashboard-section">
+    <div class="dashboard-header">
+        <span class="badge">👨‍🚒 Volunteer Panel</span>
+        <h1>Welcome, {{ session.get('user_name', 'Volunteer') }}!</h1>
+        <p>Yahan tumhe assigned emergencies dikhengi.</p>
+        <p>Dashboard har 15 seconds mein refresh hota hai.</p>
+    </div>
+
+    {% if assignments %}
+        {% for a in assignments %}
+        <div class="emergency-details-card">
+            <h2>🚨 Emergency #{{ a[1] }}</h2>
+
+            <p><strong>Type:</strong> {{ a[2] }}</p>
+            <p><strong>Description:</strong> {{ a[3] }}</p>
+            <p><strong>Priority:</strong> {{ a[4] }}</p>
+            <p><strong>Emergency Status:</strong> {{ a[5] }}</p>
+            <p><strong>Assignment Status:</strong> {{ a[6] }}</p>
+            <p><strong>Assigned At:</strong> {{ a[7] }}</p>
+            <p><strong>Location:</strong> {{ a[8] }}, {{ a[9] }}</p>
+
+
+<!-- Emergency Location Map -->
+<div class="emergency-map">
+    <h3>📍 Emergency Location</h3>
+
+    {% if a[8] is not none and a[9] is not none %}
+
+        <p>
+            <strong>Latitude:</strong> {{ a[8] }}<br>
+            <strong>Longitude:</strong> {{ a[9] }}
+        </p>
+
+<iframe
+    title="Emergency Location Map"
+    width="100%"
+    height="350"
+    style="display:block; width:100%; border:0; border-radius:12px;"
+    loading="eager"
+    src="https://www.openstreetmap.org/export/embed.html?bbox=72.80981%2C19.422089%2C72.82981%2C19.442089&layer=mapnik&marker=19.432089%2C72.819810">
+</iframe>
+
+
+        <p>
+            <a
+                href="https://www.google.com/maps/dir/?api=1&destination={{ a[8] }},{{ a[9] }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="primary-btn">
+                🧭 Open Directions in Google Maps
+            </a>
+        </p>
+
+    {% else %}
+        <p>Emergency location is not available.</p>
+    {% endif %}
+</div>
+
+            {% if a[6] == 'Assigned' %}
+            <div class="detail-actions">
+                <form method="POST"
+                      action="/volunteer-assignment/{{ a[0] }}/accept">
+                    <button type="submit" class="primary-btn">
+                        ✅ Accept
+                    </button>
+                </form>
+
+                <form method="POST"
+                      action="/volunteer-assignment/{{ a[0] }}/reject">
+                    <button type="submit" class="secondary-btn">
+                        ❌ Reject
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="emergency-details-card">
+            <h2>📭 No Assignments Yet</h2>
+            <p>Admin jab emergency assign karega, woh yahan dikh jayegi.</p>
+        </div>
+    {% endif %}
+</section>
+
+</body>
+</html>

@@ -33,6 +33,20 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+def volunteer_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect("/login")
+
+        if session.get("role") != "volunteer":
+            return "Access Denied: Volunteers only", 403
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -63,10 +77,14 @@ def login():
                 session["user_email"] = user[2]
                 session["role"] = user[4]
 
+                
                 if user[4] == "admin":
                     return redirect("/dashboard")
+                elif user[4] == "volunteer":
+                    return redirect("/volunteer-dashboard")
                 else:
                     return redirect("/")
+
 
             return render_template(
                 "login.html",
@@ -685,45 +703,81 @@ def volunteers():
 
     except mysql.connector.Error as error:
         return f"Database error: {error}"
+
 @app.route("/volunteers/add", methods=["GET", "POST"])
 @admin_required
 def add_volunteer():
-
     if request.method == "POST":
-
-        name = request.form["name"]
-        email = request.form["email"]
-        phone = request.form.get("phone")
-        skills = request.form.get("skills")
+        name = request.form["name"].strip()
+        email = request.form["email"].strip()
+        password = request.form.get("password", "")
+        phone = request.form.get("phone", "").strip()
+        skills = request.form.get("skills", "").strip()
         availability = request.form.get("availability", "Available")
+
+        if len(password) < 8:
+            return render_template(
+                "add_volunteer.html",
+                error="Password must be at least 8 characters."
+            )
+
+        if availability not in ("Available", "Busy", "Unavailable"):
+            return "Invalid availability", 400
+
+        db = None
 
         try:
             db = get_db_connection()
             cursor = db.cursor()
 
+            # Check whether email is already used.
+            cursor.execute("""
+                SELECT id FROM users WHERE email = %s
+                UNION
+                SELECT id FROM volunteers WHERE email = %s
+            """, (email, email))
+
+            if cursor.fetchone():
+                cursor.close()
+                db.close()
+                return render_template(
+                    "add_volunteer.html",
+                    error="This email is already registered."
+                )
+
+            hashed_password = generate_password_hash(password)
+
+            # Create volunteer profile.
             cursor.execute("""
                 INSERT INTO volunteers
-                (name, email, phone, skills, availability)
+                    (name, email, phone, skills, availability)
                 VALUES (%s, %s, %s, %s, %s)
-            """, (
-                name,
-                email,
-                phone,
-                skills,
-                availability
-            ))
+            """, (name, email, phone, skills, availability))
+
+            # Create volunteer login account.
+            cursor.execute("""
+                INSERT INTO users (name, email, password, role)
+                VALUES (%s, %s, %s, 'volunteer')
+            """, (name, email, hashed_password))
 
             db.commit()
-
             cursor.close()
             db.close()
 
             return redirect("/volunteers")
 
-        except mysql.connector.Error as error:
-            return f"Database error: {error}"
+        except mysql.connector.Error:
+            if db is not None and db.is_connected():
+                db.rollback()
+                db.close()
+
+            return render_template(
+                "add_volunteer.html",
+                error="Could not create volunteer. Check the database and try again."
+            )
 
     return render_template("add_volunteer.html")
+
 @app.route("/volunteers/edit/<int:volunteer_id>", methods=["GET", "POST"])
 @admin_required
 def edit_volunteer(volunteer_id):
@@ -922,6 +976,119 @@ def register():
             )
 
     return render_template("register.html")
+
+@app.route("/volunteer-dashboard")
+@volunteer_required
+def volunteer_dashboard():
+    db = None
+
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            SELECT
+                ea.id,
+                e.id,
+                e.emergency_type,
+                e.description,
+                e.priority,
+                e.status,
+                ea.assignment_status,
+                ea.assigned_at,
+                e.latitude,
+                e.longitude
+            FROM emergency_assignments ea
+            JOIN emergencies e
+                ON e.id = ea.emergency_id
+            JOIN volunteers v
+                ON v.id = ea.volunteer_id
+            WHERE v.email = %s
+            ORDER BY ea.assigned_at DESC
+        """, (session["user_email"],))
+
+        assignments = cursor.fetchall()
+        cursor.close()
+        db.close()
+
+        return render_template(
+            "volunteer_dashboard.html",
+            assignments=assignments
+        )
+
+    except mysql.connector.Error as error:
+        if db is not None and db.is_connected():
+            db.close()
+        return f"Database error: {error}"
+
+
+@app.route(
+    "/volunteer-assignment/<int:assignment_id>/<action>",
+    methods=["POST"]
+)
+@volunteer_required
+def respond_to_assignment(assignment_id, action):
+    if action not in ("accept", "reject"):
+        return "Invalid action", 400
+
+    db = None
+
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        # Verify this assignment belongs to the logged-in volunteer.
+        cursor.execute("""
+            SELECT ea.volunteer_id
+            FROM emergency_assignments ea
+            JOIN volunteers v
+                ON v.id = ea.volunteer_id
+            WHERE ea.id = %s
+              AND v.email = %s
+              AND ea.assignment_status = 'Assigned'
+        """, (assignment_id, session["user_email"]))
+
+        assignment = cursor.fetchone()
+
+        if assignment is None:
+            cursor.close()
+            db.close()
+            return "Assignment not found or already answered", 404
+
+        volunteer_id = assignment[0]
+
+        if action == "accept":
+            cursor.execute("""
+                UPDATE emergency_assignments
+                SET assignment_status = 'Accepted'
+                WHERE id = %s
+            """, (assignment_id,))
+
+        else:
+            cursor.execute("""
+                UPDATE emergency_assignments
+                SET assignment_status = 'Rejected'
+                WHERE id = %s
+            """, (assignment_id,))
+
+            cursor.execute("""
+                UPDATE volunteers
+                SET availability = 'Available'
+                WHERE id = %s
+            """, (volunteer_id,))
+
+        db.commit()
+        cursor.close()
+        db.close()
+
+        return redirect("/volunteer-dashboard")
+
+    except mysql.connector.Error as error:
+        if db is not None and db.is_connected():
+            db.rollback()
+            db.close()
+        return f"Database error: {error}"
+
 if __name__ == "__main__":
     import os
     app.run(
